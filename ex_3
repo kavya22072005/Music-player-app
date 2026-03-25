@@ -1,0 +1,150 @@
+xml code:
+
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:background="#000000">
+
+    <!-- Song Image -->
+    <ImageView
+        android:id="@+id/songImage"
+        android:layout_width="250dp"
+        android:layout_height="250dp"
+        android:src="@drawable/song1"
+        android:scaleType="centerCrop"
+        android:layout_marginBottom="30dp"/>
+
+    <!-- Buttons -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/btnPrev"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Previous"
+            android:layout_margin="10dp"/>
+
+        <Button
+            android:id="@+id/btnPlay"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Play"
+            android:layout_margin="10dp"/>
+
+        <Button
+            android:id="@+id/btnNext"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Next"
+            android:layout_margin="10dp"/>
+
+    </LinearLayout>
+
+</LinearLayout>
+
+main.activity.java:
+
+package com.example.musicplayer;
+
+import android.media.MediaPlayer;
+import android.os.Bundle;
+import android.widget.Button;
+import android.widget.ImageView;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+public class MainActivity extends AppCompatActivity {
+
+    Button btnPlay, btnNext, btnPrev;
+    ImageView songImage;
+
+    MediaPlayer mediaPlayer;
+
+    int[] songs = {
+            R.raw.song1,
+            R.raw.song2,
+            R.raw.song3
+    };
+
+    int[] images = {
+            R.drawable.song1,
+            R.drawable.song2,
+            R.drawable.song3
+    };
+
+    int currentIndex = 0;
+    boolean isPlaying = false;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        btnPlay = findViewById(R.id.btnPlay);
+        btnNext = findViewById(R.id.btnNext);
+        btnPrev = findViewById(R.id.btnPrev);
+        songImage = findViewById(R.id.songImage);
+
+        mediaPlayer = MediaPlayer.create(this, songs[currentIndex]);
+        songImage.setImageResource(images[currentIndex]);
+
+        // Play / Pause button
+        btnPlay.setOnClickListener(v -> {
+            if (isPlaying) {
+                mediaPlayer.pause();
+                btnPlay.setText("Play");
+                isPlaying = false;
+            } else {
+                mediaPlayer.start();
+                btnPlay.setText("Pause");
+                isPlaying = true;
+            }
+        });
+
+        // Next button
+        btnNext.setOnClickListener(v -> {
+            changeSong(1);
+        });
+
+        // Previous button
+        btnPrev.setOnClickListener(v -> {
+            changeSong(-1);
+        });
+    }
+
+    private void changeSong(int direction) {
+        mediaPlayer.stop();
+        mediaPlayer.release();
+
+        currentIndex = currentIndex + direction;
+
+        // Loop songs
+        if (currentIndex >= songs.length) {
+            currentIndex = 0;
+        } else if (currentIndex < 0) {
+            currentIndex = songs.length - 1;
+        }
+
+        mediaPlayer = MediaPlayer.create(this, songs[currentIndex]);
+        songImage.setImageResource(images[currentIndex]);
+
+        mediaPlayer.start();
+        btnPlay.setText("Pause");
+        isPlaying = true;
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (mediaPlayer != null) {
+            mediaPlayer.release();
+        }
+    }
+}
